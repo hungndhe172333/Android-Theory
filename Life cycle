@@ -1,0 +1,72 @@
+Khi cần giải phóng RAM, Android sẽ ưu tiên giải phóng theo thứ tự từ thấp đến cao như sau:
+
+1, Foreground (mặt tiền): là ứng dụng đang mở, và user đang thao tác với Activity, hoặc có 1 Service đang gắn kèm với Activity
+2, Visible (hiện hữu): User có thể thấy ứng dụng, nhưng không tương tác với nó, hoặc Activity mà user thấy chỉ hiển thị 1 phần
+                       Một trường hợp khác là có một Service đang đính kèm với 1 Activity đang không được sử dụng nhưng có thể nhìn thấy được
+3, Service: Ứng dụng đang chạy 1 Service nhưng không thỏa mãn thứ tự ưu tiên 1 hoặc 2 ở trên
+4, Background: Ứng dụng đang trong trạngt hái "Dừng" (stopped), không có Service hay Broadcast Receiver nào đang chạy
+               Android sẽ lưu ứng dụng này trong danh sách LRU (Least-Recenly Used) và triệt tiêu khi được yêu cầu
+5, Rỗng: Ứng dụng không có thành phần nào đang hoạt động (Service hay Receiver cũng không)
+
+
+
+===========================================================================
+Ví dụ về danh sách LRU:
+
+ ----------------------------------------------------------------------------
+| Ít được sử dụng nhất                                                       |
+| trong danh sách                                                            |
+|        |                                      get()                        | 
+|        |                    _______________________________________        |
+|        |                   |                                      \|/      |
+|      _____     _____     _____     _____     _____     _____     _____     |
+|     |     |   |     |   |     |   |     |   |     |   |     |   |     |    |
+ ----------------------------------------------------------------------------
+            Sau khi gọi get(), đưa lên đầu bộ đệm
+
+
+
+===========================================================================
+Các phương thức gọi lại:
+
+1, Ví dụ
+ - Khi user đang ở trong trình phát video trực tuyến, giả sử user chuyển sang ứng dụng khác thì ta sẽ tạm dừng video và chấm dứt kết nối mạng
+ - Nếu user quay lại ứng dụng, ta có thể kết nối lại với mạng và cho phép người dùng tiếp tục phát video từ cùng một vị trí
+
+2, Lợi ích
+ - Tránh được sự cố nếu người dùng nhận được cuộc gọi điện thoại hoặc chuyển sang một cuộc gọi khác trong khi dùng ứng dụng
+ - Tiêu thụ tài nguyên hệ thống có giá trị khi người dùng không hoạt động đang sử dụng nó
+ - Mất tiến trình của người dùng nếu họ rời khỏi ứng dụng của bạn và quay lại việc đó sau này
+ - Sự cố hoặc mất tiến trình của người dùng khi màn hình xoay giữa hướng ngang và dọc
+
+3, Các khái niệm liên quan (6 lệnh call cốt lõi)
+ - onCreate()
+   + Chỉ xảy ra 1 lần trong trong toàn bộ thời gian hoạt động
+   + Khởi taọ View, thuộc tính, các thành phần hiển thị, những thành phần quan trọng trong quá trình tồn tại của Activity
+   + Load xong thì sang onStart()
+
+ - onStart()
+   + Bật giao diện lên, chưa cho User khả lăng tương tác
+
+ - onResume()
+   + Được gọi khi Activity lại được trở lại trạng thái hoạt động, tức là ngừoi dùng thao tác và nó đang hiện hữu
+   + Sử dụng để khởi tạo các trường, đăng ký các listener, gán với services
+   + Cho User tương tác, nói chung là tất cả những gì có trong app thì ở onResume()
+   + Nếu có 1 Activity  hành động, thông báo, tác nhân nào đó chen ngang Activity, che ngang màn hình thì lúc này Activity sẽ sang onPause()
+
+ - onPause()
+   + Được gọi khi Activity quay về "hậu cung", luôn luôn được gọi trước khi Activity không còn được nhìn thấy nữa
+   + Thường được sử dụng khi lưu dữ liệu, giải phóng tài nguyên
+   + VD: Khi chơi game có điện thoại thì game sẽ được về onPasuse(), xử lí trong đó (gọi phần pause của game, lưu điểm lại, v.v)
+
+- onStop()
+   + Được gọi khi Activity không còn hiện hữu
+   + Các tác vụ liên quan đến CPU, DB nên được gọi trong khâu này
+   + Từ API 11, phương thức này luôn được đảm bảo gọi ra
+
+
+
+===========================================================================
+savedInstanceState
+ - Đây là 1 loại dữ liệu không bền vững, không được lưu trữ cụ thể ở đâu ngoài bộ nhớ, nó đc sử dụng truyền, phục hồi, lưu trạng thái của 1 Ac
+ - Nếu 1 Ac có hỗ trợ màn ngang, khi xoay màn thì Ac đó sẽ bị Destroy
