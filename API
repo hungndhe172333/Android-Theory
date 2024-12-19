@@ -1,0 +1,40 @@
+Convert sang định dạng Json:
+ - Chuyển đổi từ đối tượng Java sang JSON (Serialization):
+   + Web chứa thư viện: https://github.com/google/gson       | Thư viện: implementation 'com.google.code.gson:gson:2.11.0'
+
+ - Code như này để lấy đoạn String Json cop lên web ở dưới:
+          Gson gson = new Gson();
+          String strJson = gson.toJson(user);   //user là 1 đối tượng truyền vào
+          Log.e("String Json", strJson);
+
+ - jsonformatter (mục đích là nắm chắc định dạng Json; gửi param request API cần phải đúng định dạng Json)
+
+
+
+Một số thư viện cần thêm:
+ - Web chứa thư viện Retrofit: https://square.github.io/retrofit/          
+   + Thư viện: implementation (libs.retrofit)             // android studio rcm
+                                               
+ - Ngoài ra còn 1 thư viện nữa cần add: com.squareup.retrofit2:converter-gson:(version này trùng với Retrofit kia)
+   + Vào đây lướt đến phần Download để xem last version: https://github.com/square/retrofit
+   + Thư viện: implementation (libs.retrofit2.converter.gson)          //Android studio rcm
+
+ - Nhớ phải khai báo trong ManiFest dòng: <uses-permission android:name="android.permission.INTERNET"/>
+
+
+
+Tùy vào từng loại api thì có các phương thức khác nhau
+ - Nếu url api có dấu '?': thường là GET (những yếu tố sau dấu '?' thì lấy ra để truyền vào class interface ApiService: hàm GET)
+ - Nếu url api không có dấu '?': thường là POST
+
+
+
+Vì là API POST không xem được hiển thị nên cần 1 thằng tool hỗ trợ: Postman
+
+
+
+Bản chất của token: 
+ - Đại diện cho user
+ - Đại diện cho phiên làm việc của user đó, hết hạn thì bắt loggin lại
+ - Remember me bản chất là lưu cái token đó
+ - Login thành công mới có token trả về
